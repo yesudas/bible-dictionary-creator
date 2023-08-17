@@ -6,16 +6,13 @@ package in.wordofgod.bible.dictionary.creator;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,53 +31,9 @@ import org.w3c.dom.Element;
 /**
  * 
  */
-public class BibleDictionaryCreatorFromFolder {
+public class ZefaniaXML {
 
-	private static final String INFORMATION_FILE_NAME = "INFORMATION.txt";
-	public static boolean writeToFile = false;
-	public static boolean formatXML = true;
-	public static String folderPath;
-	public static String outputFile;
-	private static Properties dictionaryDetails = null;
-
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) throws ParserConfigurationException, TransformerException {
-
-		if (args.length == 0) {
-			System.out.println("Please input source folder path....");
-			// return;
-		} else {
-			folderPath = args[0];
-
-			if (folderPath.contains("\\")) {
-				outputFile = folderPath.substring(folderPath.lastIndexOf("\\"), folderPath.length());
-			} else {
-				outputFile = folderPath.substring(0, folderPath.length());
-			}
-
-			if (folderPath == null) {
-				System.out.println("folderPath is null");
-				return;
-			}
-
-			File folder = new File(folderPath);
-			if (!folder.exists() || !folder.isDirectory()) {
-				System.out.println("Folder " + folderPath + " Does not exists");
-				return;
-			}
-
-			if (folder.listFiles().length == 0) {
-				System.out.println("Folder " + folderPath
-						+ " does not have any files. Please use one file per dictionary word. First line hould always be the word to which dictionary is written.");
-				return;
-			}
-
-			//writeToFile = true;
-			loadDictionaryDetails();
-		}
-
+	public static void build() throws ParserConfigurationException, TransformerException {
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
@@ -95,13 +48,13 @@ public class BibleDictionaryCreatorFromFolder {
 		// add Items
 		buildItems(doc, rootElement);
 
-		if (writeToFile) {
+		if (BibleDictionaryCreator.writeToFile) {
 			// write dom document to a file
-			File file = new File(outputFile + ".xml");
+			File file = new File(BibleDictionaryCreator.outputFile + ".xml");
 			try {
 				FileOutputStream output = new FileOutputStream(file);
 				writeXml(doc, output);
-				System.out.println("Dictionary created with the name: " + folderPath + ".xml");
+				System.out.println("Dictionary created with the name: " + BibleDictionaryCreator.folderPath + ".xml");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -111,16 +64,16 @@ public class BibleDictionaryCreatorFromFolder {
 		}
 	}
 
-	private static void buildItems(Document doc, Element rootElement) {
+	public static void buildItems(Document doc, Element rootElement) {
 
-		System.out.println("Reading the files/words from the folder " + folderPath);
+		System.out.println("Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
 
 		BufferedReader reader;
 		String strItemID;
 		Element item;
-		File folder = new File(folderPath);
+		File folder = new File(BibleDictionaryCreator.folderPath);
 		for (File file : folder.listFiles()) {
-			if(INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())) {
+			if(BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())) {
 				continue;
 			}
 			System.out.println("Reading the file: " + file.getName());
@@ -168,12 +121,12 @@ public class BibleDictionaryCreatorFromFolder {
 		}
 	}
 
-	private static String buildDescription(Document doc, Element item, String line) {
+	public static String buildDescription(Document doc, Element item, String line) {
 		line = line + "<p/>";
 		return line;
 	}
 
-	private static String buildH3Description(Document doc, Element item, String line) {
+	public static String buildH3Description(Document doc, Element item, String line) {
 		// Remove the tag [H3]
 		line = line.replaceAll("\\[H3\\]", "").strip();
 
@@ -181,7 +134,7 @@ public class BibleDictionaryCreatorFromFolder {
 		return line;
 	}
 
-	private static String buildH2Description(Document doc, Element item, String line) {
+	public static String buildH2Description(Document doc, Element item, String line) {
 		// Remove the tag [H2]
 		line = line.replaceAll("\\[H2\\]", "").strip();
 
@@ -189,7 +142,7 @@ public class BibleDictionaryCreatorFromFolder {
 		return line;
 	}
 
-	private static String buildH1Description(Document doc, Element item, String line) {
+	public static String buildH1Description(Document doc, Element item, String line) {
 		// Remove prefix text like 0001 used for identifying unique no of words
 		line = line.replace(line.substring(0, line.indexOf("[H1]")), "");
 		// Remove the tag [H1]
@@ -200,16 +153,16 @@ public class BibleDictionaryCreatorFromFolder {
 		return line;
 	}
 
-	private static Element buildInformation(Document doc) {
+	public static Element buildInformation(Document doc) {
 		Element information = doc.createElement("INFORMATION");
 
 		Element element = doc.createElement("subject");
-		CDATASection cdataSection = doc.createCDATASection(dictionaryDetails.getProperty("subject"));
+		CDATASection cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("subject"));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("publisher");
-		cdataSection = doc.createCDATASection(dictionaryDetails.getProperty("publisher"));
+		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("publisher"));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
@@ -223,33 +176,33 @@ public class BibleDictionaryCreatorFromFolder {
 		information.appendChild(element);
 
 		element = doc.createElement("title");
-		cdataSection = doc.createCDATASection(dictionaryDetails.getProperty("title"));
+		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("title"));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("creator");
-		cdataSection = doc.createCDATASection(dictionaryDetails.getProperty("creator"));
+		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("creator"));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("description");
-		cdataSection = doc.createCDATASection(dictionaryDetails.getProperty("description"));
+		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("description"));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("identifier");
-		cdataSection = doc.createCDATASection(dictionaryDetails.getProperty("identifier"));
+		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("identifier"));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("language");
-		element.setTextContent(dictionaryDetails.getProperty("language"));
+		element.setTextContent(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("language"));
 		information.appendChild(element);
 
 		return information;
 	}
 
-	private static Element buildRootElement(Document doc) {
+	public static Element buildRootElement(Document doc) {
 		Element rootElement = doc.createElement("dictionary");
 		rootElement.setAttribute("type", "x-dictionary");
 		rootElement.setAttribute("refbible", "any");
@@ -265,7 +218,7 @@ public class BibleDictionaryCreatorFromFolder {
 	 * @param output
 	 * @throws TransformerException
 	 */
-	private static void writeXml(Document doc, OutputStream output) throws TransformerException {
+	public static void writeXml(Document doc, OutputStream output) throws TransformerException {
 
 		TransformerFactory transformerFactory = TransformerFactory.newInstance();
 		Transformer transformer = transformerFactory.newTransformer();
@@ -293,24 +246,6 @@ public class BibleDictionaryCreatorFromFolder {
 
 		transformer.transform(source, result);
 
-	}
-
-	private static void loadDictionaryDetails() {
-		dictionaryDetails = new Properties();
-		BufferedReader propertyReader;
-		try {
-			File infoFile = new File(folderPath + "//" + INFORMATION_FILE_NAME);
-			propertyReader = new BufferedReader(new InputStreamReader(
-					new FileInputStream(infoFile), "UTF8"));
-			dictionaryDetails.load(propertyReader);
-			propertyReader.close();
-		} catch (UnsupportedEncodingException e1) {
-			e1.printStackTrace();
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 }

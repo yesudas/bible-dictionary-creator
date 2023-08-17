@@ -9,7 +9,7 @@
     <target name="create_run_jar">
         <jar destfile="${dir.jarfile}/bible-dictionary-creator.jar" filesetmanifest="mergewithoutmain">
             <manifest>
-                <attribute name="Main-Class" value="in.wordofgod.bible.dictionary.creator.BibleDictionaryCreatorFromFolder"/>
+                <attribute name="Main-Class" value="in.wordofgod.bible.dictionary.creator.BibleDictionaryCreator"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="${dir.jarfile}/bin"/>
