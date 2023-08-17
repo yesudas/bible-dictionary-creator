@@ -8,11 +8,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -129,9 +129,12 @@ public class BibleDictionaryCreatorFromFolder {
 			item = doc.createElement("item");
 			rootElement.appendChild(item);
 			item.setAttribute("id", strItemID);
+			
 
 			try {
-				reader = new BufferedReader(new FileReader(file));
+				FileInputStream fis = new FileInputStream(file);
+				InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+				reader = new BufferedReader(isr);
 				String line = reader.readLine();
 
 				Element description = doc.createElement("description");
@@ -271,8 +274,8 @@ public class BibleDictionaryCreatorFromFolder {
 		transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 
 		// set xml encoding
-		// <?xml version="1.0" encoding="utf-8"?>
-		transformer.setOutputProperty(OutputKeys.ENCODING, "utf-8");
+		// <?xml version="1.0" encoding="UTF-8"?>
+		transformer.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
 
 		// hide or display the xml declaration
 		// hide or display <?xml version="1.0" encoding="UTF-8" standalone="no"?>
