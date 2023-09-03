@@ -9,7 +9,10 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -26,28 +29,49 @@ public class BibleDictionaryCreator {
 	public static String folderPath;
 	public static String outputFile;
 	public static Properties DICTIONARY_DETAILS = null;
+	public static boolean WRITE_LOGS_TO_FILE = true;
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws ParserConfigurationException, TransformerException {
 
-		validateInput(args);
+		if (!validateInput(args)) {
+			return;
+		}
 
-		//writeToFile = true;
+		initSystemOutSettings();
+
 		loadDictionaryDetails();
+
+		MapWithBible.buildMap();
 
 		if ("yes".equalsIgnoreCase(DICTIONARY_DETAILS.getProperty("createZefaniaXML"))) {
 			ZefaniaXML.build();
 		}
+		if ("yes".equalsIgnoreCase(DICTIONARY_DETAILS.getProperty("createWordDocument"))) {
+			WordDocument.build();
+		}
 	}
 
-	private static void validateInput(String[] args) {
+	private static boolean validateInput(String[] args) {
 		if (args.length == 0) {
 			System.out.println("Please input source folder path....");
-			// return;
+			return false;
 		} else {
 			folderPath = args[0];
+
+			File folder = new File(folderPath);
+			if (!folder.exists() || !folder.isDirectory()) {
+				System.out.println("Folder " + folderPath + " Does not exists");
+				return false;
+			}
+
+			if (folder.listFiles().length == 0) {
+				System.out.println("Folder " + folderPath
+						+ " does not have any files. Please use one file per dictionary word. First line hould always be the word to which dictionary is written.");
+				return false;
+			}
 
 			if (folderPath.contains("\\")) {
 				outputFile = folderPath.substring(folderPath.lastIndexOf("\\"), folderPath.length());
@@ -57,21 +81,11 @@ public class BibleDictionaryCreator {
 
 			if (folderPath == null) {
 				System.out.println("folderPath is null");
-				return;
-			}
-
-			File folder = new File(folderPath);
-			if (!folder.exists() || !folder.isDirectory()) {
-				System.out.println("Folder " + folderPath + " Does not exists");
-				return;
-			}
-
-			if (folder.listFiles().length == 0) {
-				System.out.println("Folder " + folderPath
-						+ " does not have any files. Please use one file per dictionary word. First line hould always be the word to which dictionary is written.");
-				return;
+				return false;
 			}
 		}
+		writeToFile = true;
+		return true;
 	}
 
 	private static void loadDictionaryDetails() {
@@ -88,6 +102,22 @@ public class BibleDictionaryCreator {
 			e1.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private static void initSystemOutSettings() {
+		if (WRITE_LOGS_TO_FILE) {
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH mm ss");
+			String timeStamp = dateFormat.format(new Date());
+			timeStamp = timeStamp.replaceAll(" ", "-");
+			File outputFile = new File(BibleDictionaryCreator.folderPath.replace(BibleDictionaryCreator.outputFile, "")
+					+ "/" + BibleDictionaryCreator.outputFile + "-logs-" + timeStamp + ".txt");
+			System.out.println("Output-Results are stored at :: " + outputFile.getAbsolutePath());
+			try {
+				System.setOut(new PrintStream(outputFile));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 

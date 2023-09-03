@@ -33,7 +33,11 @@ import org.w3c.dom.Element;
  */
 public class ZefaniaXML {
 
+	private static final String EXTENSION = ".xml";
+
 	public static void build() throws ParserConfigurationException, TransformerException {
+		System.out.println("ZefaniaXML Bible Dictionary Creation started");
+
 		DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder docBuilder = docFactory.newDocumentBuilder();
 
@@ -50,11 +54,13 @@ public class ZefaniaXML {
 
 		if (BibleDictionaryCreator.writeToFile) {
 			// write dom document to a file
-			File file = new File(BibleDictionaryCreator.outputFile + ".xml");
+			File file = new File(BibleDictionaryCreator.folderPath.replace(BibleDictionaryCreator.outputFile, "") + "/"
+					+ BibleDictionaryCreator.outputFile + EXTENSION);
 			try {
 				FileOutputStream output = new FileOutputStream(file);
 				writeXml(doc, output);
-				System.out.println("Dictionary created with the name: " + BibleDictionaryCreator.folderPath + ".xml");
+				System.out
+						.println("Dictionary created with the name: " + file.getAbsolutePath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -62,71 +68,76 @@ public class ZefaniaXML {
 			// print XML to system console
 			writeXml(doc, System.out);
 		}
+		System.out.println("ZefaniaXML Bible Dictionary Creation completed");
 	}
 
 	public static void buildItems(Document doc, Element rootElement) {
 
 		System.out.println("Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
 
-		BufferedReader reader;
-		String strItemID;
-		Element item;
+		String strItemID = null;
+		Element item = null;
 		File folder = new File(BibleDictionaryCreator.folderPath);
 		for (File file : folder.listFiles()) {
-			if(BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())) {
+			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())) {
 				continue;
 			}
 			System.out.println("Reading the file: " + file.getName());
 
 			strItemID = file.getName().substring(0, file.getName().lastIndexOf("."));
-			item = doc.createElement("item");
-			rootElement.appendChild(item);
-			item.setAttribute("id", strItemID);
-			
-
-			try {
-				FileInputStream fis = new FileInputStream(file);
-				InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-				reader = new BufferedReader(isr);
-				String line = reader.readLine();
-
+			String sb = null;
+			for (String word : MapWithBible.dictionaryWordsMap.get(strItemID)) {
+				if (sb == null) {
+					sb = buildDescriptionFromFile(file);
+				}
+				item = doc.createElement("item");
+				rootElement.appendChild(item);
+				item.setAttribute("id", word);
 				Element description = doc.createElement("description");
 				item.appendChild(description);
-				String sb = "";
-
-				while (line != null) {
-
-					line = line.strip();
-					if (!line.equals("")) {
-
-						if (line.contains("[H1]")) {
-							sb = sb + buildH1Description(doc, item, line);
-						} else if (line.contains("[H2]")) {
-							sb = sb + buildH2Description(doc, item, line);
-						} else if (line.contains("[H3]")) {
-							sb = sb + buildH3Description(doc, item, line);
-						} else {
-							sb = sb + buildDescription(doc, item, line);
-						}
-					}
-					line = reader.readLine();
-				}
 				CDATASection cdataSection = doc.createCDATASection(sb);
 				description.appendChild(cdataSection);
 
-				reader.close();
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 		}
 	}
 
-	public static String buildDescription(Document doc, Element item, String line) {
+	private static String buildDescriptionFromFile(File file) {
+		BufferedReader reader;
+		String sb = "";
+		try {
+			FileInputStream fis = new FileInputStream(file);
+			InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+			reader = new BufferedReader(isr);
+			String line = reader.readLine();
+			while (line != null) {
+				line = line.strip();
+				if (!line.equals("")) {
+					if (line.contains("[H1]")) {
+						sb = sb + buildH1Description(line);
+					} else if (line.contains("[H2]")) {
+						sb = sb + buildH2Description(line);
+					} else if (line.contains("[H3]")) {
+						sb = sb + buildH3Description(line);
+					} else {
+						sb = sb + buildDescription(line);
+					}
+				}
+				line = reader.readLine();
+			}
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return sb;
+	}
+
+	public static String buildDescription(String line) {
 		line = line + "<p/>";
 		return line;
 	}
 
-	public static String buildH3Description(Document doc, Element item, String line) {
+	public static String buildH3Description(String line) {
 		// Remove the tag [H3]
 		line = line.replaceAll("\\[H3\\]", "").strip();
 
@@ -134,7 +145,7 @@ public class ZefaniaXML {
 		return line;
 	}
 
-	public static String buildH2Description(Document doc, Element item, String line) {
+	public static String buildH2Description(String line) {
 		// Remove the tag [H2]
 		line = line.replaceAll("\\[H2\\]", "").strip();
 
@@ -142,7 +153,7 @@ public class ZefaniaXML {
 		return line;
 	}
 
-	public static String buildH1Description(Document doc, Element item, String line) {
+	public static String buildH1Description(String line) {
 		// Remove prefix text like 0001 used for identifying unique no of words
 		line = line.replace(line.substring(0, line.indexOf("[H1]")), "");
 		// Remove the tag [H1]
@@ -157,12 +168,14 @@ public class ZefaniaXML {
 		Element information = doc.createElement("INFORMATION");
 
 		Element element = doc.createElement("subject");
-		CDATASection cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("subject"));
+		CDATASection cdataSection = doc
+				.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_SUBJECT));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("publisher");
-		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("publisher"));
+		cdataSection = doc
+				.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_PUBLISHER));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
@@ -176,27 +189,31 @@ public class ZefaniaXML {
 		information.appendChild(element);
 
 		element = doc.createElement("title");
-		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("title"));
+		cdataSection = doc
+				.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_TITLE));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("creator");
-		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("creator"));
+		cdataSection = doc
+				.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_CREATOR));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("description");
-		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("description"));
+		cdataSection = doc
+				.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_DESCRIPTION));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("identifier");
-		cdataSection = doc.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("identifier"));
+		cdataSection = doc
+				.createCDATASection(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_IDENTIFIER));
 		element.appendChild(cdataSection);
 		information.appendChild(element);
 
 		element = doc.createElement("language");
-		element.setTextContent(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty("language"));
+		element.setTextContent(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_LANGUAGE));
 		information.appendChild(element);
 
 		return information;
