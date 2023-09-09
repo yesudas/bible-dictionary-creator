@@ -125,7 +125,9 @@ public class WordDocument {
 		BufferedReader reader = null;
 
 		for (File file : folder.listFiles()) {
-			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName()) || file.isDirectory()) {
+			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
+					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())
+					|| file.isDirectory()) {
 				continue;
 			}
 			String word = file.getName().substring(0, file.getName().lastIndexOf("."));
@@ -217,7 +219,7 @@ public class WordDocument {
 		line = line.replaceAll("\\[H3\\]", "").strip();
 		XWPFParagraph paragraph = document.createParagraph();
 		// paragraph.setStyle("Heading 3");
-		//paragraph.setAlignment(ParagraphAlignment.CENTER);
+		// paragraph.setAlignment(ParagraphAlignment.CENTER);
 		XWPFRun run = paragraph.createRun();
 		run.setFontFamily(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_CONTENT_FONT));
 		run.setFontSize(getFontSize(Constants.STR_CONTENT_FONT_SIZE) + 2);
@@ -420,7 +422,8 @@ public class WordDocument {
 		paragraph = document.createParagraph();
 		paragraph.setSpacingAfter(0);
 		for (File file : folder.listFiles()) {
-			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())) {
+			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
+					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())) {
 				continue;
 			}
 			String word = file.getName().substring(0, file.getName().lastIndexOf("."));

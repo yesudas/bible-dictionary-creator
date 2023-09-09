@@ -59,8 +59,7 @@ public class ZefaniaXML {
 			try {
 				FileOutputStream output = new FileOutputStream(file);
 				writeXml(doc, output);
-				System.out
-						.println("Dictionary created with the name: " + file.getAbsolutePath());
+				System.out.println("Dictionary created with the name: " + file.getAbsolutePath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -79,14 +78,60 @@ public class ZefaniaXML {
 		Element item = null;
 		File folder = new File(BibleDictionaryCreator.folderPath);
 		for (File file : folder.listFiles()) {
-			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())) {
+			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
+					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())) {
 				continue;
 			}
 			System.out.println("Reading the file: " + file.getName());
 
 			strItemID = file.getName().substring(0, file.getName().lastIndexOf("."));
+			strItemID = strItemID.trim().strip().trim();
 			String sb = null;
-			for (String word : MapWithBible.dictionaryWordsMap.get(strItemID)) {
+			if(MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)==null) {
+				continue;
+			}
+			
+			MapWithBible.bibleWordsVsDictionaryWordsMap.forEach((k,v)->{
+				
+			});
+			
+			for (String word : MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)) {
+				if (sb == null) {
+					sb = buildDescriptionFromFile(file);
+				}
+				item = doc.createElement("item");
+				rootElement.appendChild(item);
+				item.setAttribute("id", word);
+				Element description = doc.createElement("description");
+				item.appendChild(description);
+				CDATASection cdataSection = doc.createCDATASection(sb);
+				description.appendChild(cdataSection);
+
+			}
+		}
+	}
+
+	public static void buildItems1(Document doc, Element rootElement) {
+
+		System.out.println("Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
+
+		String strItemID = null;
+		Element item = null;
+		File folder = new File(BibleDictionaryCreator.folderPath);
+		for (File file : folder.listFiles()) {
+			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
+					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())) {
+				continue;
+			}
+			System.out.println("Reading the file: " + file.getName());
+
+			strItemID = file.getName().substring(0, file.getName().lastIndexOf("."));
+			strItemID = strItemID.trim().strip().trim();
+			String sb = null;
+			if(MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)==null) {
+				continue;
+			}
+			for (String word : MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)) {
 				if (sb == null) {
 					sb = buildDescriptionFromFile(file);
 				}

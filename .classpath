@@ -22,5 +22,6 @@
 	<classpathentry kind="lib" path="libs/poi-5.1/ooxml-lib/slf4j-api-1.7.32.jar"/>
 	<classpathentry kind="lib" path="libs/poi-5.1/ooxml-lib/xmlbeans-5.0.2.jar"/>
 	<classpathentry kind="lib" path="libs/poi-5.1/ooxml-lib/curvesapi-1.06.jar"/>
+	<classpathentry kind="lib" path="libs/bible-parser.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

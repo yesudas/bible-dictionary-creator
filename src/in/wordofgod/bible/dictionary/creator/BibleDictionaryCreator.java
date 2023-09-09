@@ -24,6 +24,7 @@ import javax.xml.transform.TransformerException;
 public class BibleDictionaryCreator {
 
 	public static final String INFORMATION_FILE_NAME = "INFORMATION.txt";
+	public static final String MAPPING_FILE_NAME = "MAPPING.txt";
 	public static boolean writeToFile = false;
 	public static boolean formatXML = true;
 	public static String folderPath;
@@ -31,11 +32,14 @@ public class BibleDictionaryCreator {
 	public static Properties DICTIONARY_DETAILS = null;
 	public static boolean WRITE_LOGS_TO_FILE = true;
 
+	public static String BIBLE_SOURCE_DIRECTORY = "D:\\WOG\\synched-wog-bibles\\bibles-texts\\My-Source\\Tamil"; 
+	public static String BIBLE_VERSIONS = "TBSI,TAMSL'22,TAMOVR,TAMNT,TAMIRV'19,TAMCV'22,TAMCV'20,TAMBL'98,taBCS,ERV-ta,CTB1973";
+	
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) throws ParserConfigurationException, TransformerException {
-
+//TODO include BIBLE_SOURCE_DIRECTORY, BIBLE_VERSIONS
 		if (!validateInput(args)) {
 			return;
 		}
@@ -45,6 +49,8 @@ public class BibleDictionaryCreator {
 		loadDictionaryDetails();
 
 		MapWithBible.buildMap();
+		
+		MapWithBible.buildMapWithBible(BIBLE_SOURCE_DIRECTORY, BIBLE_VERSIONS);
 
 		if ("yes".equalsIgnoreCase(DICTIONARY_DETAILS.getProperty("createZefaniaXML"))) {
 			ZefaniaXML.build();
