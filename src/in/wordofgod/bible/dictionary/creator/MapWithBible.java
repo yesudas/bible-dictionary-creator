@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -29,7 +30,8 @@ import in.wordofgod.bible.parser.vosgson.Verse;
  */
 public class MapWithBible {
 
-	private static String[] vowelArr = { "்", "ா", "ி", "ீ", "ு", "ூ", "ெ", "ே", "ை", "ொ", "ோ", "ௌ" };
+	private static String[] tamilVowelArrAll = { "்", "ா", "ி", "ீ", "ு", "ூ", "ெ", "ே", "ை", "ொ", "ோ", "ௌ" };
+	private static String[] tamilVowelArr = { "ா", "ி", "ீ", "ு", "ூ", "ெ", "ே", "ை", "ொ", "ோ", "ௌ" };
 
 	// Total dictionary words given as input
 	private static SortedSet<String> dictionaryWords = new TreeSet<String>();
@@ -41,17 +43,21 @@ public class MapWithBible {
 	// tamil)
 	// Key = vowels; Value = Dictionary word, used for easy search for matching
 	// bible words
-	public static Map<String, String> uniqueDictionaryWords = new TreeMap<String, String>();
+	public static Map<String, String> uniqueDictionaryWords = new TreeMap<String, String>(Collections.reverseOrder());
 	// All unique words from bible
-	private static SortedSet<String> bibleWords = new TreeSet<String>();
+	private static SortedSet<String> bibleWords = new TreeSet<String>(Collections.reverseOrder());
 	// key = bible word; value = dictionary word
 	public static Map<String, String> bibleWordsVsDictionaryWordsMap = new TreeMap<String, String>();
+	// key = dictionary word; value = list of matching bible words
+	public static Map<String, List<String>> dictionaryWordsVsBibleWordsMap = new TreeMap<String, List<String>>();
 
 	// Without vowel, to match the words in the bible as startsWith
 	// For any matches, need to build the mapping into dictionaryWordsMap
-	private static Map<String, String> allWordsWithoutVowelMap = new TreeMap<String, String>();
+	// private static Map<String, String> allWordsWithoutVowelMap = new
+	// TreeMap<String, String>();
 	// With vowel, to match the words in the bible as equals/exact match
-	private static Map<String, String> allWordsVowelMap = new TreeMap<String, String>();
+	// private static Map<String, String> allWordsVowelMap = new TreeMap<String,
+	// String>();
 
 	private static int totalWordsIncludingVowels = 0;
 
@@ -74,33 +80,35 @@ public class MapWithBible {
 		System.out.println("Building Words Map From " + BibleDictionaryCreator.MAPPING_FILE_NAME + " File is started");
 		Properties properties = loadMappingFile(
 				BibleDictionaryCreator.folderPath + "\\" + BibleDictionaryCreator.MAPPING_FILE_NAME);
-		properties.forEach((k, v) -> {
-			System.out.println("Addinal mappings : " + k.toString() + " = " + v.toString());
-			String word = k.toString();
-			String shorternedWord = word;
-			String endsWith = endsWith(word);
-			if (endsWith != null) {
-				shorternedWord = removeLast(word, endsWith);
-				if (!dictionaryWordsVsVowelsMap.containsKey(v.toString())) {
-					dictionaryWordsVsVowelsMap.put(v.toString(), new ArrayList<String>());
-				}
-				dictionaryWordsVsVowelsMap.get(v.toString()).add(k.toString());
-				uniqueDictionaryWords.put(k.toString(), v.toString());
-				totalWordsIncludingVowels++;
-				for (String vowel : vowelArr) {
-					dictionaryWordsVsVowelsMap.get(v.toString()).add(shorternedWord + vowel);
-				}
-				dictionaryWordsVsVowelsMap.get(v.toString()).add(word);
-				uniqueDictionaryWords.put(word, v.toString());
-				totalWordsIncludingVowels++;
-			}
-		});
-		System.out
-				.println("Total Words by actual dictionary words in the mapping: " + dictionaryWordsVsVowelsMap.size());
-		System.out.println("Total Words by uniqueDictionaryWords: " + uniqueDictionaryWords.size());
-		System.out.println("Total Words by Including Vowels in the mapping: " + totalWordsIncludingVowels);
+		switch (BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_LANGUAGE)) {
+		case "ta": {
+			buildWordsMapFromMappingFileForTamil(properties);
+			break;
+		}
+		default:
+			properties.forEach((k, v) -> {
+				System.out.println("Addinal mappings : " + k.toString() + " = " + v.toString());
+				addToMap(k.toString(), v.toString());
+			});
+		}
+		System.out.println(
+				"Including Mapping File: Total Words by Including Vowels in the mapping: " + totalWordsIncludingVowels);
+		System.out.println("Including Mapping File: Total Words by actual dictionary words in the mapping: "
+				+ dictionaryWordsVsVowelsMap.size());
+		System.out.println("dictionaryWordsVsVowelsMap :: " + "\n" + dictionaryWordsVsVowelsMap);
+		System.out.println(
+				"Including Mapping File: Total Words by uniqueDictionaryWords: " + uniqueDictionaryWords.size());
+		System.out.println("uniqueDictionaryWords :: " + "\n" + uniqueDictionaryWords);
 		System.out
 				.println("Building Words Map From " + BibleDictionaryCreator.MAPPING_FILE_NAME + " File is completed");
+	}
+
+	private static void buildWordsMapFromMappingFileForTamil(Properties properties) {
+		System.out.println("Identified language as tamil");
+		properties.forEach((k, v) -> {
+			System.out.println("Addinal mappings : " + k.toString() + " = " + v.toString());
+			applyLinguisticRulesForTamil(k.toString(), v.toString());
+		});
 	}
 
 	private static void buildWordsMap() {
@@ -115,11 +123,12 @@ public class MapWithBible {
 				addToMap(word, word);
 			}
 		}
-		System.out.println("allWordsWithoutVowelMap :: " + allWordsWithoutVowelMap);
-		System.out.println("Total Words without vowels based in the mapping: " + allWordsWithoutVowelMap.size());
-		System.out.println("allWordsVowelMap :: " + allWordsVowelMap);
-		System.out.println("Total Words including vowels based in the mapping: " + allWordsVowelMap.size());
-		System.out.println("dictionaryWordsMap :: " + dictionaryWordsVsVowelsMap);
+		// System.out.println("allWordsWithoutVowelMap :: " + allWordsWithoutVowelMap);
+		// System.out.println("Total Words without vowels based in the mapping: " +
+		// allWordsWithoutVowelMap.size());
+		// System.out.println("allWordsVowelMap :: " + allWordsVowelMap);
+		// System.out.println("Total Words including vowels based in the mapping: " +
+		// allWordsVowelMap.size());
 		System.out
 				.println("Total Words by actual dictionary words in the mapping: " + dictionaryWordsVsVowelsMap.size());
 		System.out.println("Total Words by uniqueDictionaryWords: " + uniqueDictionaryWords.size());
@@ -129,49 +138,74 @@ public class MapWithBible {
 
 	private static void buildWordsForTamil() {
 		System.out.println("Identified language as tamil");
+		System.out.println("Building words map with additional vowels for tamil language is started");
+		for (String dictionaryWord : dictionaryWords) {
+			applyLinguisticRulesForTamil(dictionaryWord);
+		}
 		System.out.println("Building words map with additional vowels for tamil language is completed");
-		for (String word : dictionaryWords) {
-			String shorternedWord = word;
-			String endsWith = endsWith(word);
-			if (endsWith != null) {
-				shorternedWord = removeLast(word, endsWith);
-				addToVowelMap(shorternedWord, word);
-				for (String vowel : vowelArr) {
-					addToVowelMap(shorternedWord + vowel, word);
+	}
+
+	private static void applyLinguisticRulesForTamil(String dictionaryWord) {
+		// த் - சேத், யாரேத், யாப்பேத்; ஆ - அகாயா, மெத்தூசலா, நோவா
+		if (dictionaryWord.endsWith("த்") || dictionaryWord.endsWith("ா")) {
+			addToMap(dictionaryWord, dictionaryWord);
+			return;
+		}
+		for (String vowel : tamilVowelArrAll) {
+			if (dictionaryWord.endsWith(vowel)) {
+				String shorternedWord = removeLast(dictionaryWord, vowel);
+				// addToMap(shorternedWord, dictionaryWord);Dont consider அ vowel
+				for (String vowel1 : tamilVowelArr) {
+					if (!uniqueDictionaryWords.containsKey(shorternedWord + vowel1)) {// அபியா, அபியு -> அபியா
+						addToMap(shorternedWord + vowel1, dictionaryWord);
+					}
 				}
-				addToVowelMap(word, word);
-			} else {
-				addToMap(word, word);
+				break;
 			}
 		}
+		// Add the word itself
+		addToMap(dictionaryWord, dictionaryWord);
+		return;
 	}
 
-	private static String endsWith(String word) {
-		for (String vowel : vowelArr) {
-			if (word.endsWith(vowel)) {
-				return vowel;
+	private static void applyLinguisticRulesForTamil(String additionalWord, String dictionaryWord) {
+		// த் - சேத், யாரேத், யாப்பேத்; ஆ - அகாயா, மெத்தூசலா, நோவா
+		if (additionalWord.endsWith("த்") || additionalWord.endsWith("ா")) {
+			addToMap(additionalWord, dictionaryWord);
+			return;
+		}
+		for (String vowel : tamilVowelArrAll) {
+			if (additionalWord.endsWith(vowel)) {
+				String shorternedWord = removeLast(additionalWord, vowel);
+				// addToMap(shorternedWord, dictionaryWord);Dont consider அ vowel
+				for (String vowel1 : tamilVowelArr) {
+					addToMap(shorternedWord + vowel1, dictionaryWord);
+				}
+				break;
 			}
 		}
-		return null;
+		// Add the word itself
+		addToMap(additionalWord, dictionaryWord);
+		return;
 	}
 
-	private static void addToVowelMap(String key, String value) {
-		allWordsVowelMap.put(key, value);
-		if (!dictionaryWordsVsVowelsMap.containsKey(value)) {
-			dictionaryWordsVsVowelsMap.put(value, new ArrayList<String>());
+	private static void addToVowelMap(String key, String dictionaryWord) {
+		// allWordsVowelMap.put(key, dictionaryWord);
+		if (!dictionaryWordsVsVowelsMap.containsKey(dictionaryWord)) {
+			dictionaryWordsVsVowelsMap.put(dictionaryWord, new ArrayList<String>());
 		}
-		dictionaryWordsVsVowelsMap.get(value).add(key);
-		uniqueDictionaryWords.put(key, value);
+		dictionaryWordsVsVowelsMap.get(dictionaryWord).add(key);
+		uniqueDictionaryWords.put(key, dictionaryWord);
 		totalWordsIncludingVowels++;
 	}
 
-	private static void addToMap(String key, String value) {
-		allWordsWithoutVowelMap.put(key, value);
-		if (!dictionaryWordsVsVowelsMap.containsKey(value)) {
-			dictionaryWordsVsVowelsMap.put(value, new ArrayList<String>());
+	private static void addToMap(String key, String dictionaryWord) {
+		// allWordsWithoutVowelMap.put(key, value);
+		if (!dictionaryWordsVsVowelsMap.containsKey(dictionaryWord)) {
+			dictionaryWordsVsVowelsMap.put(dictionaryWord, new ArrayList<String>());
 		}
-		dictionaryWordsVsVowelsMap.get(value).add(key);
-		uniqueDictionaryWords.put(key, value);
+		dictionaryWordsVsVowelsMap.get(dictionaryWord).add(key);
+		uniqueDictionaryWords.put(key, dictionaryWord);
 		totalWordsIncludingVowels++;
 	}
 
@@ -205,15 +239,15 @@ public class MapWithBible {
 			}
 			// System.out.println("Reading the file: " + file.getName());
 
-			temp = file.getName().trim().strip();
+			temp = BibleDictionaryCreator.trimDictionaryWord(file.getName());
 			if (temp.split(" ").length > 1) {
 				System.out.println("Two Words found - file name should be single word : " + temp);
 			}
 			temp = temp.substring(0, temp.lastIndexOf("."));
-			dictionaryWords.add(temp.trim().strip());
+			dictionaryWords.add(BibleDictionaryCreator.trimDictionaryWord(temp));
 		}
 		System.out.println(dictionaryWords);
-		System.out.println("Total Unique Words: " + dictionaryWords.size());
+		System.out.println("Total Unique Dictionary Words: " + dictionaryWords.size());
 		System.out.println("Building words index is completed");
 	}
 
@@ -221,14 +255,59 @@ public class MapWithBible {
 		System.out.println("Building Map With Bible is started");
 		buildUniqueBibleWords(bibleSourceDirectory, bibleVersions);
 
-		for (String bibleWord : bibleWords) {
-			uniqueDictionaryWords.forEach((k, v) -> {
-				if (bibleWord.startsWith(k)) {
-					bibleWordsVsDictionaryWordsMap.put(bibleWord, k);
-				}
-			});
+		for (String dictionaryWord : dictionaryWords) {
+			if (!uniqueDictionaryWords.containsValue(dictionaryWord)) {
+				System.out.println("Dictionary word not found: " + dictionaryWord
+						+ " in uniqueDictionaryWords, verify MAPPING.txt, for now added automatically");
+				uniqueDictionaryWords.put(dictionaryWord, dictionaryWord);
+			}
 		}
+
+		uniqueDictionaryWords.forEach((k, v) -> {
+			for (String bibleWord : bibleWords) {
+				if (bibleWordsVsDictionaryWordsMap.containsKey(bibleWord)) {
+					continue;
+				}
+				if (bibleWord.startsWith(k)) {
+					bibleWordsVsDictionaryWordsMap.put(bibleWord, v);
+				}
+			}
+		});
+		/*
+		 * for (String bibleWord : bibleWords) { if
+		 * (bibleWordsVsDictionaryWordsMap.containsKey(bibleWord)) { continue; }
+		 * uniqueDictionaryWords.forEach((k, v) -> {// அன்னாள்=அன்னாள், அன்னாளௌ=அன்னாள்,
+		 * அன்னாளோ=அன்னாள், // அன்னாளொ=அன்னாள், அன்னாளை=அன்னாள், அன்னாளே=அன்னாள், //
+		 * அன்னாளெ=அன்னாள், அன்னாளூ=அன்னாள், அன்னாளு=அன்னாள், // அன்னாளீ=அன்னாள்,
+		 * அன்னாளி=அன்னாள், அன்னாளா=அன்னாள், // அன்னா=அன்னா, அனனியா=அனனியா, if
+		 * (bibleWord.startsWith(k)) { bibleWordsVsDictionaryWordsMap.put(bibleWord,
+		 * v);// அன்னா=[அன்னா, அன்னாசிடம், அன்னாளிடம், அன்னாளின், // அன்னாளின்மேல்,
+		 * அன்னாளுக்கு, அன்னாளுக்கும், // அன்னாளுக்கோ, அன்னாளுடன், அன்னாளுடைய, //
+		 * அன்னாளும், அன்னாளே, அன்னாளை, அன்னாளைக், // அன்னாளைச், அன்னாளைத், அன்னாளோடு,
+		 * அன்னாள், // அன்னாள்மேல், அன்னாவிடம், அன்னாவினிடம், // அன்னாவின், அன்னாவுக்கு,
+		 * அன்னாவுக்கோ, // அன்னாவும், அன்னாவைச், அன்னாவோடு, அன்னாஸ்] return; } }); }
+		 */
+		bibleWordsVsDictionaryWordsMap.forEach((bibleWord, dictionaryWord) -> {
+			if (!dictionaryWordsVsBibleWordsMap.containsKey(dictionaryWord.toString())) {
+				dictionaryWordsVsBibleWordsMap.put(dictionaryWord.toString(), new ArrayList<String>());
+			}
+			dictionaryWordsVsBibleWordsMap.get(dictionaryWord.toString()).add(bibleWord.toString());
+		});
+
+		for (String dictionaryWord : dictionaryWords) {
+			if (!dictionaryWordsVsBibleWordsMap.containsKey(dictionaryWord)) {
+				System.out.println("Dictionary word not found: " + dictionaryWord
+						+ " in dictionaryWordsVsBibleWordsMap, verify MAPPING.txt, for now added automatically");
+				dictionaryWordsVsBibleWordsMap.put(dictionaryWord, new ArrayList<String>());
+				dictionaryWordsVsBibleWordsMap.get(dictionaryWord).add(dictionaryWord);
+			}
+		}
+
 		System.out.println("Total bibleWordsVsDictionaryWordsMap: " + bibleWordsVsDictionaryWordsMap.size());
+		System.out.println("Total dictionaryWordsVsBibleWordsMap: " + dictionaryWordsVsBibleWordsMap.size());
+		System.out.println("Total bibleWords is " + bibleWordsVsDictionaryWordsMap.size() + "; "
+				+ " Total Matching dictionaryWords is " + dictionaryWordsVsBibleWordsMap.size());
+		System.out.println("dictionaryWordsVsBibleWordsMap:\n" + dictionaryWordsVsBibleWordsMap);
 		System.out.println("Building Map With Bible is completed");
 	}
 
@@ -247,7 +326,8 @@ public class MapWithBible {
 						for (Book book : bible.getBooks()) {
 							for (Chapter chapter : book.getChapters()) {
 								for (Verse verse : chapter.getVerses()) {
-									String[] words = verse.getText().split("[\\s']");
+									String verseText = removeHTMLTags(verse.getText());
+									String[] words = verseText.split("[\\s']");
 									for (String word : words) {
 										word = word.replaceAll("[\\\"\\(\\)\\-\\.\\:\\,\\;]", "");
 										word = word.trim().strip();
@@ -266,6 +346,16 @@ public class MapWithBible {
 		}
 		System.out.println("Building Unique Bible Words index is completed");
 		System.out.println("Total Unique Words in " + bibleVersions + " is: " + bibleWords.size());
+	}
+
+	private static String removeHTMLTags(String text) {
+		while (text.contains("<")) {
+			int startPos = text.indexOf("<");
+			int endPos = text.indexOf(">");
+			String htmlTag = text.substring(startPos, endPos + 1);
+			text = text.replace(htmlTag, "");
+		}
+		return text;
 	}
 
 	private static Properties loadMappingFile(String mappingFilePath) {

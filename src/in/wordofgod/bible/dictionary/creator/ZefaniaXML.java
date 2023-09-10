@@ -77,6 +77,7 @@ public class ZefaniaXML {
 		String strItemID = null;
 		Element item = null;
 		File folder = new File(BibleDictionaryCreator.folderPath);
+		int count = 0;
 		for (File file : folder.listFiles()) {
 			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
 					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())) {
@@ -84,18 +85,15 @@ public class ZefaniaXML {
 			}
 			System.out.println("Reading the file: " + file.getName());
 
-			strItemID = file.getName().substring(0, file.getName().lastIndexOf("."));
-			strItemID = strItemID.trim().strip().trim();
+			strItemID = BibleDictionaryCreator
+					.trimDictionaryWord(file.getName().substring(0, file.getName().lastIndexOf(".")));
 			String sb = null;
-			if(MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)==null) {
+			if (MapWithBible.dictionaryWordsVsBibleWordsMap.get(strItemID) == null) {
+				System.out.println("Word not found: " + strItemID);
 				continue;
 			}
-			
-			MapWithBible.bibleWordsVsDictionaryWordsMap.forEach((k,v)->{
-				
-			});
-			
-			for (String word : MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)) {
+
+			for (String word : MapWithBible.dictionaryWordsVsBibleWordsMap.get(strItemID)) {
 				if (sb == null) {
 					sb = buildDescriptionFromFile(file);
 				}
@@ -106,9 +104,10 @@ public class ZefaniaXML {
 				item.appendChild(description);
 				CDATASection cdataSection = doc.createCDATASection(sb);
 				description.appendChild(cdataSection);
-
+				count++;
 			}
 		}
+		System.out.println("Total Dictionary Words created in ZefaniaXML is: " + count);
 	}
 
 	public static void buildItems1(Document doc, Element rootElement) {
@@ -128,7 +127,7 @@ public class ZefaniaXML {
 			strItemID = file.getName().substring(0, file.getName().lastIndexOf("."));
 			strItemID = strItemID.trim().strip().trim();
 			String sb = null;
-			if(MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)==null) {
+			if (MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID) == null) {
 				continue;
 			}
 			for (String word : MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)) {

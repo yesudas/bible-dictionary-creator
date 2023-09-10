@@ -34,6 +34,7 @@ public class BibleDictionaryCreator {
 
 	public static String BIBLE_SOURCE_DIRECTORY = "D:\\WOG\\synched-wog-bibles\\bibles-texts\\My-Source\\Tamil"; 
 	public static String BIBLE_VERSIONS = "TBSI,TAMSL'22,TAMOVR,TAMNT,TAMIRV'19,TAMCV'22,TAMCV'20,TAMBL'98,taBCS,ERV-ta,CTB1973";
+	//public static String BIBLE_VERSIONS = "TBSI";
 	
 	/**
 	 * @param args
@@ -125,6 +126,10 @@ public class BibleDictionaryCreator {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public static String trimDictionaryWord(String word) {
+		return word.trim().strip().trim();
 	}
 
 }
