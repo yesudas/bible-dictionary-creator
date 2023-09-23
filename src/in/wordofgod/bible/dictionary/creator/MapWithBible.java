@@ -239,20 +239,23 @@ public class MapWithBible {
 			}
 			// System.out.println("Reading the file: " + file.getName());
 
-			temp = BibleDictionaryCreator.trimDictionaryWord(file.getName());
+			temp = Utils.trimDictionaryWord(file.getName());
 			if (temp.split(" ").length > 1) {
 				System.out.println("Two Words found - file name should be single word : " + temp);
 			}
 			temp = temp.substring(0, temp.lastIndexOf("."));
-			dictionaryWords.add(BibleDictionaryCreator.trimDictionaryWord(temp));
+			dictionaryWords.add(Utils.trimDictionaryWord(temp));
 		}
 		System.out.println(dictionaryWords);
 		System.out.println("Total Unique Dictionary Words: " + dictionaryWords.size());
 		System.out.println("Building words index is completed");
 	}
 
-	public static void buildMapWithBible(String bibleSourceDirectory, String bibleVersions) {
+	public static void buildMapWithBible() {
 		System.out.println("Building Map With Bible is started");
+		String bibleSourceDirectory = BibleDictionaryCreator.DICTIONARY_DETAILS
+				.getProperty(Constants.STR_BIBLE_SOURCE_DIRECTORY);
+		String bibleVersions = BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_BIBLE_VERSIONS);
 		buildUniqueBibleWords(bibleSourceDirectory, bibleVersions);
 
 		for (String dictionaryWord : dictionaryWords) {
@@ -273,20 +276,6 @@ public class MapWithBible {
 				}
 			}
 		});
-		/*
-		 * for (String bibleWord : bibleWords) { if
-		 * (bibleWordsVsDictionaryWordsMap.containsKey(bibleWord)) { continue; }
-		 * uniqueDictionaryWords.forEach((k, v) -> {// அன்னாள்=அன்னாள், அன்னாளௌ=அன்னாள்,
-		 * அன்னாளோ=அன்னாள், // அன்னாளொ=அன்னாள், அன்னாளை=அன்னாள், அன்னாளே=அன்னாள், //
-		 * அன்னாளெ=அன்னாள், அன்னாளூ=அன்னாள், அன்னாளு=அன்னாள், // அன்னாளீ=அன்னாள்,
-		 * அன்னாளி=அன்னாள், அன்னாளா=அன்னாள், // அன்னா=அன்னா, அனனியா=அனனியா, if
-		 * (bibleWord.startsWith(k)) { bibleWordsVsDictionaryWordsMap.put(bibleWord,
-		 * v);// அன்னா=[அன்னா, அன்னாசிடம், அன்னாளிடம், அன்னாளின், // அன்னாளின்மேல்,
-		 * அன்னாளுக்கு, அன்னாளுக்கும், // அன்னாளுக்கோ, அன்னாளுடன், அன்னாளுடைய, //
-		 * அன்னாளும், அன்னாளே, அன்னாளை, அன்னாளைக், // அன்னாளைச், அன்னாளைத், அன்னாளோடு,
-		 * அன்னாள், // அன்னாள்மேல், அன்னாவிடம், அன்னாவினிடம், // அன்னாவின், அன்னாவுக்கு,
-		 * அன்னாவுக்கோ, // அன்னாவும், அன்னாவைச், அன்னாவோடு, அன்னாஸ்] return; } }); }
-		 */
 		bibleWordsVsDictionaryWordsMap.forEach((bibleWord, dictionaryWord) -> {
 			if (!dictionaryWordsVsBibleWordsMap.containsKey(dictionaryWord.toString())) {
 				dictionaryWordsVsBibleWordsMap.put(dictionaryWord.toString(), new ArrayList<String>());

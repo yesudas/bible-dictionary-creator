@@ -34,6 +34,7 @@ import org.w3c.dom.Element;
 public class ZefaniaXML {
 
 	private static final String EXTENSION = ".xml";
+	private static final boolean writeToFile = true;
 
 	public static void build() throws ParserConfigurationException, TransformerException {
 		System.out.println("ZefaniaXML Bible Dictionary Creation started");
@@ -52,7 +53,7 @@ public class ZefaniaXML {
 		// add Items
 		buildItems(doc, rootElement);
 
-		if (BibleDictionaryCreator.writeToFile) {
+		if (writeToFile) {
 			// write dom document to a file
 			File file = new File(BibleDictionaryCreator.folderPath.replace(BibleDictionaryCreator.outputFile, "") + "/"
 					+ BibleDictionaryCreator.outputFile + EXTENSION);
@@ -85,8 +86,7 @@ public class ZefaniaXML {
 			}
 			System.out.println("Reading the file: " + file.getName());
 
-			strItemID = BibleDictionaryCreator
-					.trimDictionaryWord(file.getName().substring(0, file.getName().lastIndexOf(".")));
+			strItemID = Utils.trimDictionaryWord(file.getName().substring(0, file.getName().lastIndexOf(".")));
 			String sb = null;
 			if (MapWithBible.dictionaryWordsVsBibleWordsMap.get(strItemID) == null) {
 				System.out.println("Word not found: " + strItemID);
@@ -108,42 +108,6 @@ public class ZefaniaXML {
 			}
 		}
 		System.out.println("Total Dictionary Words created in ZefaniaXML is: " + count);
-	}
-
-	public static void buildItems1(Document doc, Element rootElement) {
-
-		System.out.println("Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
-
-		String strItemID = null;
-		Element item = null;
-		File folder = new File(BibleDictionaryCreator.folderPath);
-		for (File file : folder.listFiles()) {
-			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
-					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())) {
-				continue;
-			}
-			System.out.println("Reading the file: " + file.getName());
-
-			strItemID = file.getName().substring(0, file.getName().lastIndexOf("."));
-			strItemID = strItemID.trim().strip().trim();
-			String sb = null;
-			if (MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID) == null) {
-				continue;
-			}
-			for (String word : MapWithBible.dictionaryWordsVsVowelsMap.get(strItemID)) {
-				if (sb == null) {
-					sb = buildDescriptionFromFile(file);
-				}
-				item = doc.createElement("item");
-				rootElement.appendChild(item);
-				item.setAttribute("id", word);
-				Element description = doc.createElement("description");
-				item.appendChild(description);
-				CDATASection cdataSection = doc.createCDATASection(sb);
-				description.appendChild(cdataSection);
-
-			}
-		}
 	}
 
 	private static String buildDescriptionFromFile(File file) {
@@ -176,12 +140,12 @@ public class ZefaniaXML {
 		return sb;
 	}
 
-	public static String buildDescription(String line) {
+	private static String buildDescription(String line) {
 		line = line + "<p/>";
 		return line;
 	}
 
-	public static String buildH3Description(String line) {
+	private static String buildH3Description(String line) {
 		// Remove the tag [H3]
 		line = line.replaceAll("\\[H3\\]", "").strip();
 
@@ -189,7 +153,7 @@ public class ZefaniaXML {
 		return line;
 	}
 
-	public static String buildH2Description(String line) {
+	private static String buildH2Description(String line) {
 		// Remove the tag [H2]
 		line = line.replaceAll("\\[H2\\]", "").strip();
 
@@ -197,7 +161,7 @@ public class ZefaniaXML {
 		return line;
 	}
 
-	public static String buildH1Description(String line) {
+	private static String buildH1Description(String line) {
 		// Remove prefix text like 0001 used for identifying unique no of words
 		line = line.replace(line.substring(0, line.indexOf("[H1]")), "");
 		// Remove the tag [H1]

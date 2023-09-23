@@ -23,5 +23,7 @@
 	<classpathentry kind="lib" path="libs/poi-5.1/ooxml-lib/xmlbeans-5.0.2.jar"/>
 	<classpathentry kind="lib" path="libs/poi-5.1/ooxml-lib/curvesapi-1.06.jar"/>
 	<classpathentry kind="lib" path="libs/bible-parser.jar"/>
+	<classpathentry kind="lib" path="libs/sqljet-1.1.15.jar"/>
+	<classpathentry kind="lib" path="libs/antlr-runtime-3.4.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
