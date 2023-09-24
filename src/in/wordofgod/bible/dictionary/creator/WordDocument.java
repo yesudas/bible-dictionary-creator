@@ -125,9 +125,7 @@ public class WordDocument {
 		BufferedReader reader = null;
 
 		for (File file : folder.listFiles()) {
-			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
-					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())
-					|| file.isDirectory()) {
+			if (Utils.checkForInValidFile(file)) {
 				continue;
 			}
 			String word = file.getName().substring(0, file.getName().lastIndexOf("."));

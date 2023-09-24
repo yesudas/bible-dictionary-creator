@@ -10,6 +10,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -80,6 +82,19 @@ public class MapWithBible {
 		System.out.println("Building Words Map From " + BibleDictionaryCreator.MAPPING_FILE_NAME + " File is started");
 		Properties properties = loadMappingFile(
 				BibleDictionaryCreator.folderPath + "\\" + BibleDictionaryCreator.MAPPING_FILE_NAME);
+
+		if (!BibleDictionaryCreator.mapRelatedWordsAutomatically) {
+			properties.forEach((k, v) -> {
+				if (!dictionaryWordsVsBibleWordsMap.containsKey(v)) {
+					dictionaryWordsVsBibleWordsMap.put(v.toString(), new ArrayList<String>());
+					dictionaryWordsVsBibleWordsMap.get(v.toString()).add(k.toString());
+				} else {
+					dictionaryWordsVsBibleWordsMap.get(v.toString()).add(k.toString());
+				}
+			});
+			return;
+		}
+
 		switch (BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_LANGUAGE)) {
 		case "ta": {
 			buildWordsMapFromMappingFileForTamil(properties);
@@ -233,8 +248,7 @@ public class MapWithBible {
 		File folder = new File(BibleDictionaryCreator.folderPath);
 		String temp = null;
 		for (File file : folder.listFiles()) {
-			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
-					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())) {
+			if (Utils.checkForInValidFile(file)) {
 				continue;
 			}
 			// System.out.println("Reading the file: " + file.getName());
@@ -253,29 +267,32 @@ public class MapWithBible {
 
 	public static void buildMapWithBible() {
 		System.out.println("Building Map With Bible is started");
-		String bibleSourceDirectory = BibleDictionaryCreator.DICTIONARY_DETAILS
-				.getProperty(Constants.STR_BIBLE_SOURCE_DIRECTORY);
-		String bibleVersions = BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_BIBLE_VERSIONS);
-		buildUniqueBibleWords(bibleSourceDirectory, bibleVersions);
-
 		for (String dictionaryWord : dictionaryWords) {
 			if (!uniqueDictionaryWords.containsValue(dictionaryWord)) {
 				System.out.println("Dictionary word not found: " + dictionaryWord
-						+ " in uniqueDictionaryWords, verify MAPPING.txt, for now added automatically");
+						+ " in uniqueDictionaryWords, verify MAPPING.txt, added automatically for now");
 				uniqueDictionaryWords.put(dictionaryWord, dictionaryWord);
 			}
 		}
 
-		uniqueDictionaryWords.forEach((k, v) -> {
-			for (String bibleWord : bibleWords) {
-				if (bibleWordsVsDictionaryWordsMap.containsKey(bibleWord)) {
-					continue;
+		if (BibleDictionaryCreator.mapRelatedWordsAutomatically) {
+			String bibleSourceDirectory = BibleDictionaryCreator.DICTIONARY_DETAILS
+					.getProperty(Constants.STR_BIBLE_SOURCE_DIRECTORY);
+			String bibleVersions = BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_BIBLE_VERSIONS);
+			buildUniqueBibleWords(bibleSourceDirectory, bibleVersions);
+
+			uniqueDictionaryWords.forEach((k, v) -> {
+				for (String bibleWord : bibleWords) {
+					if (bibleWordsVsDictionaryWordsMap.containsKey(bibleWord)) {
+						continue;
+					}
+					if (bibleWord.startsWith(k)) {
+						bibleWordsVsDictionaryWordsMap.put(bibleWord, v);
+					}
 				}
-				if (bibleWord.startsWith(k)) {
-					bibleWordsVsDictionaryWordsMap.put(bibleWord, v);
-				}
-			}
-		});
+			});
+		}
+
 		bibleWordsVsDictionaryWordsMap.forEach((bibleWord, dictionaryWord) -> {
 			if (!dictionaryWordsVsBibleWordsMap.containsKey(dictionaryWord.toString())) {
 				dictionaryWordsVsBibleWordsMap.put(dictionaryWord.toString(), new ArrayList<String>());
@@ -369,6 +386,40 @@ public class MapWithBible {
 			}
 		}
 		return bookNames;
+	}
+
+	public static void createMappingFileForReview() {
+		int dictionaryWordCount = 0;
+		int mappingWordCount = 0;
+		StringBuilder sb = new StringBuilder();
+		for (String dictionaryWord : dictionaryWordsVsBibleWordsMap.keySet()) {
+			dictionaryWordCount++;
+			for (String mappingWord : dictionaryWordsVsBibleWordsMap.get(dictionaryWord)) {
+				// Ignore all the mapping words which are already found as dictionary words
+				if (!MapWithBible.uniqueDictionaryWords.containsKey(mappingWord)) {
+					mappingWordCount++;
+					sb.append(mappingWord).append("=").append(dictionaryWord).append("\n");
+				}
+			}
+		}
+		String filePath = BibleDictionaryCreator.folderPath + "\\"
+				+ BibleDictionaryCreator.MAPPING_FILE_NAME_FOR_REVIEW;
+		createFile(filePath, sb.toString());
+		System.out.println(
+				"Mappings have been generated. Please review manually and then continue using this program with the option mapRelatedWordsAutomatically=no");
+		System.out.println(
+				"After your review, rename this file to MAPPING.txt or move this file's content to MAPPING.txt file");
+		System.out.println("Total Dictionary Words: " + dictionaryWordCount);
+		System.out.println("Total Related Mapping Words: " + mappingWordCount);
+		System.out.println("Mappings have been stored in the file for your review at: " + filePath);
+	}
+
+	private static void createFile(String filePath, String text) {
+		try {
+			Files.writeString(Path.of(filePath), text);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

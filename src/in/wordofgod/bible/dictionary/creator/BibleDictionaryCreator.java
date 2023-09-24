@@ -16,11 +16,14 @@ public class BibleDictionaryCreator {
 
 	public static final String INFORMATION_FILE_NAME = "INFORMATION.txt";
 	public static final String MAPPING_FILE_NAME = "MAPPING.txt";
+	public static final String MAPPING_FILE_NAME_FOR_REVIEW = "MAPPING-For-Review.txt";
 	public static boolean formatXML = true;
 	public static String folderPath;
 	public static String outputFile;
 	public static Properties DICTIONARY_DETAILS = null;
 	public static boolean WRITE_LOGS_TO_FILE = true;
+	public static boolean generateMappingsForReview = false;
+	public static boolean mapRelatedWordsAutomatically = true;
 
 	/**
 	 * @param args
@@ -33,18 +36,43 @@ public class BibleDictionaryCreator {
 
 		Utils.initSystemOutSettings();
 
+		initConfigurations();
+
 		MapWithBible.buildMap();
 
 		MapWithBible.buildMapWithBible();
 
-		if ("yes".equalsIgnoreCase(DICTIONARY_DETAILS.getProperty("createZefaniaXML"))) {
+		if (generateMappingsForReview) {
+			MapWithBible.createMappingFileForReview();
+			return;
+		}
+
+		String format = DICTIONARY_DETAILS.getProperty("createZefaniaXML");
+		if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
 			ZefaniaXML.build();
 		}
-		if ("yes".equalsIgnoreCase(DICTIONARY_DETAILS.getProperty("createWordDocument"))) {
+		format = DICTIONARY_DETAILS.getProperty("createWordDocument");
+		if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
 			WordDocument.build();
 		}
-		if ("yes".equalsIgnoreCase(DICTIONARY_DETAILS.getProperty("createMyBibleModule"))) {
+		format = DICTIONARY_DETAILS.getProperty("createMyBibleModule");
+		if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
 			MyBibleZone.build();
+		}
+		format = DICTIONARY_DETAILS.getProperty("createTheWordModule");
+		if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
+			TheWord.build();
+		}
+	}
+
+	private static void initConfigurations() {
+		String temp = DICTIONARY_DETAILS.getProperty("generateMappingsForReview");
+		if ("yes".equalsIgnoreCase(temp) || "true".equalsIgnoreCase(temp)) {
+			generateMappingsForReview = true;
+		}
+		temp = DICTIONARY_DETAILS.getProperty("mapRelatedWordsAutomatically");
+		if ("no".equalsIgnoreCase(temp) || "false".equalsIgnoreCase(temp)) {
+			mapRelatedWordsAutomatically = false;
 		}
 	}
 

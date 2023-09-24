@@ -143,8 +143,7 @@ public class MyBibleZone {
 		File folder = new File(BibleDictionaryCreator.folderPath);
 		int count = 0;
 		for (File file : folder.listFiles()) {
-			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
-					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())) {
+			if (Utils.checkForInValidFile(file)) {
 				continue;
 			}
 			System.out.println("Reading the file: " + file.getName());

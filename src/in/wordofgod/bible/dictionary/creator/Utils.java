@@ -58,4 +58,48 @@ public class Utils {
 		}
 	}
 
+	static String convertToDecimalNCR(String str) {
+		String preserve = "ascii";
+		int haut = 0;
+		String cp;
+		String CPstring = "";
+		String before = "&#";
+		String after = ";";
+	
+		for (int i = 0; i < str.length(); i++) {
+			int b = str.codePointAt(i);
+			if (b < 0 || b > 0xFFFF) {
+				return null;
+			}
+			if (haut != 0) {
+				if (0xDC00 <= b && b <= 0xDFFF) {
+					cp = "" + 0x10000 + ((haut - 0xD800) << 10) + (b - 0xDC00);
+					CPstring += before + cp + after;
+					haut = 0;
+					continue;
+				} else {
+					return null;
+				}
+			}
+			if (0xD800 <= b && b <= 0xDBFF) {
+				haut = b;
+			} else {
+				if (preserve.equals("ascii") && b <= 127) {
+					CPstring += str.charAt(i);
+				} else {
+					cp = "" + b;
+					CPstring += before + cp + after;
+				}
+			}
+		}
+		return CPstring;
+	}
+
+	static boolean checkForInValidFile(File file) {
+		return BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
+				|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())
+				|| BibleDictionaryCreator.MAPPING_FILE_NAME_FOR_REVIEW.equalsIgnoreCase(file.getName())
+				|| file.isDirectory();
+	}
+
 }
