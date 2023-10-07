@@ -4,6 +4,7 @@
 package in.wordofgod.bible.dictionary.creator;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -27,8 +28,9 @@ public class BibleDictionaryCreator {
 
 	/**
 	 * @param args
+	 * @throws IOException 
 	 */
-	public static void main(String[] args) throws ParserConfigurationException, TransformerException {
+	public static void main(String[] args) throws ParserConfigurationException, TransformerException, IOException {
 
 		if (!validateInput(args)) {
 			return;

@@ -33,8 +33,16 @@ import org.w3c.dom.Element;
  */
 public class ZefaniaXML {
 
+	public static final String OUTPUT_FORMAT = "ZefaniaXML";
 	private static final String EXTENSION = ".xml";
 	private static final boolean writeToFile = true;
+
+	// <see target="x-self">REVELATIONS</see>
+	private static String WORD_LINK_FORMAT = "<a href='S:DICTIONARY_WORD'>DICTIONARY_WORD</a>";
+	// <reflink target="2;5;20">5:20</reflink>
+	static String REFERENCE_LINK_FORMAT_1 = "<reflink target=\"BOOK_NUMBER;CHAPTER_NUMBER;VERSE_NUMBER\">BIBLE_PORTION</reflink>";
+	// <reflink target="2;32;2-4">Ex 32:2-4</reflink>
+	static String REFERENCE_LINK_FORMAT_2 = "<reflink target=\"BOOK_NUMBER;CHAPTER_NUMBER;STARTING_VERSE_NUMBER-ENDING_VERSE_NUMBER\">BIBLE_PORTION</reflink>";
 
 	public static void build() throws ParserConfigurationException, TransformerException {
 		System.out.println("ZefaniaXML Bible Dictionary Creation started");
@@ -60,7 +68,7 @@ public class ZefaniaXML {
 			try {
 				FileOutputStream output = new FileOutputStream(file);
 				writeXml(doc, output);
-				System.out.println("Dictionary created with the name: " + file.getAbsolutePath());
+				System.out.println("ZefaniaXML : Dictionary created with the name: " + file.getAbsolutePath());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -73,7 +81,7 @@ public class ZefaniaXML {
 
 	public static void buildItems(Document doc, Element rootElement) {
 
-		System.out.println("Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
+		System.out.println("ZefaniaXML : Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
 
 		String strItemID = null;
 		Element item = null;
@@ -83,12 +91,12 @@ public class ZefaniaXML {
 			if (Utils.checkForInValidFile(file)) {
 				continue;
 			}
-			System.out.println("Reading the file: " + file.getName());
+			System.out.println("ZefaniaXML : Reading the file: " + file.getName());
 
 			strItemID = Utils.trimDictionaryWord(file.getName().substring(0, file.getName().lastIndexOf(".")));
 			String sb = null;
 			if (MapWithBible.dictionaryWordsVsBibleWordsMap.get(strItemID) == null) {
-				System.out.println("Word not found: " + strItemID);
+				System.out.println("ZefaniaXML : Word not found: " + strItemID);
 				continue;
 			}
 
@@ -106,7 +114,7 @@ public class ZefaniaXML {
 				count++;
 			}
 		}
-		System.out.println("Total Dictionary Words created in ZefaniaXML is: " + count);
+		System.out.println("ZefaniaXML : Total Dictionary Words created in ZefaniaXML is: " + count);
 	}
 
 	private static String buildDescriptionFromFile(File file) {
@@ -136,6 +144,7 @@ public class ZefaniaXML {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		sb = Utils.applyLinksToReferences(sb, OUTPUT_FORMAT);
 		return sb;
 	}
 

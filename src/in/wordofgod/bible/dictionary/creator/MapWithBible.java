@@ -265,7 +265,7 @@ public class MapWithBible {
 		System.out.println("Building words index is completed");
 	}
 
-	public static void buildMapWithBible() {
+	public static void buildMapWithBible() throws IOException {
 		System.out.println("Building Map With Bible is started");
 		for (String dictionaryWord : dictionaryWords) {
 			if (!uniqueDictionaryWords.containsValue(dictionaryWord)) {
@@ -317,7 +317,7 @@ public class MapWithBible {
 		System.out.println("Building Map With Bible is completed");
 	}
 
-	private static void buildUniqueBibleWords(String bibleSourceDirectory, String bibleVersions) {
+	private static void buildUniqueBibleWords(String bibleSourceDirectory, String bibleVersions) throws IOException {
 		System.out.println("Building Unique Bible Words index is started");
 		File dir = new File(bibleSourceDirectory);
 		String[] versions = bibleVersions.split(",");

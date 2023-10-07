@@ -24,12 +24,20 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
  */
 public class MyBibleZone {
 
-	private static final String EXTENSION = ".dictionary.SQLite3";
+	public static final String OUTPUT_FORMAT = "MyBibleZone";
+	static final String EXTENSION = ".dictionary.SQLite3";
+
+	// <a href='S:Alpha'>ALPHA</a>
+	public static String WORD_LINK_FORMAT = "<a href='S:DICTIONARY_WORD'>DICTIONARY_WORD</a>";
+	// <a href='B:120 19:37'>2Kings 19:37</a> OR <a href='B:490 14:11'>Luk 14:11</a>
+	public static String REFERENCE_LINK_FORMAT_1 = "<a href='B:BOOK_NUMBER CHAPTER_NUMBER:VERSE_NUMBER'>BIBLE_PORTION</a>";
+	// <a href='B:10 1:8-4'>Gen 1:8-4</a>
+	public static String REFERENCE_LINK_FORMAT_2 = "<a href='B:BOOK_NUMBER CHAPTER_NUMBER:STARTING_VERSE_NUMBER-ENDING_VERSE_NUMBER'>BIBLE_PORTION</a>";
 
 	public static void build() {
 		System.out.println("MyBible Bible Dictionary Creation started...");
 
-		String outfile = deleteOutputFileIfAlreadyExists();
+		String outfile = Utils.deleteOutputFileIfAlreadyExists(EXTENSION);
 
 		SqlJetDb db;
 		try {
@@ -56,11 +64,11 @@ public class MyBibleZone {
 		}
 
 		System.out.println("MyBible Bible Dictionary Creation completed...");
-		System.out.println("Result is stored in: " + new File(outfile).getAbsolutePath());
+		System.out.println("MyBibleZone : Result is stored in: " + new File(outfile).getAbsolutePath());
 	}
 
 	private static void buildInfoTable(SqlJetDb db) throws FileNotFoundException, IOException, SqlJetException {
-		System.out.println("Info Table Creation started...");
+		System.out.println("MyBibleZone : Info Table Creation started...");
 		Map<String, String> infoValues = new LinkedHashMap<>();
 
 		infoValues.put("language", BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_LANGUAGE));
@@ -76,11 +84,11 @@ public class MyBibleZone {
 		for (Map.Entry<String, String> entry : infoValues.entrySet()) {
 			infoTable.insert(entry.getKey(), entry.getValue());
 		}
-		System.out.println("Info Table Creation completed...");
+		System.out.println("MyBibleZone : Info Table Creation completed...");
 	}
 
 	private static void buildWordsTable(SqlJetDb db) throws FileNotFoundException, IOException, SqlJetException {
-		System.out.println("Words Table Creation started...");
+		System.out.println("MyBibleZone : Words Table Creation started...");
 		int count = 0;
 		ISqlJetTable wordsTable = db.getTable("words");
 		for (String dictionaryWord : MapWithBible.dictionaryWordsVsBibleWordsMap.keySet()) {
@@ -92,8 +100,8 @@ public class MyBibleZone {
 				}
 			}
 		}
-		System.out.println("Words Table Creation completed...");
-		System.out.println("Total Mapping Words created is: " + count);
+		System.out.println("MyBibleZone : Words Table Creation completed...");
+		System.out.println("MyBibleZone : Total Mapping Words created is: " + count);
 	}
 
 	private static void configureDB(SqlJetDb db) throws SqlJetException {
@@ -108,13 +116,6 @@ public class MyBibleZone {
 		db.createIndex("CREATE UNIQUE INDEX dictionary_topic ON dictionary(topic ASC)");
 		db.createTable(
 				"CREATE TABLE words(variation TEXT, standard_form TEXT, book_number NUMERIC NOT NULL DEFAULT 0, chapter_number NUMERIC NOT NULL DEFAULT 0, verse_number NUMERIC NOT NULL DEFAULT 0, PRIMARY KEY (standard_form, variation, book_number, chapter_number, verse_number))");
-	}
-
-	private static String deleteOutputFileIfAlreadyExists() {
-		String outfile = BibleDictionaryCreator.folderPath.replace(BibleDictionaryCreator.outputFile, "") + "/"
-				+ BibleDictionaryCreator.outputFile + EXTENSION;
-		new File(outfile).delete();
-		return outfile;
 	}
 
 	public static SqlJetDb openDB(File file, boolean write) throws SqlJetException {
@@ -136,8 +137,8 @@ public class MyBibleZone {
 	}
 
 	public static void buildDictionaryTable(SqlJetDb db) throws SqlJetException {
-		System.out.println("Dictionary Table Creation started...");
-		System.out.println("Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
+		System.out.println("MyBibleZone : Dictionary Table Creation started...");
+		System.out.println("MyBibleZone : Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
 		ISqlJetTable dictionaryTable = db.getTable("dictionary");
 		String strItemID = null;
 		File folder = new File(BibleDictionaryCreator.folderPath);
@@ -146,11 +147,11 @@ public class MyBibleZone {
 			if (Utils.checkForInValidFile(file)) {
 				continue;
 			}
-			System.out.println("Reading the file: " + file.getName());
+			System.out.println("MyBibleZone : Reading the file: " + file.getName());
 
 			strItemID = Utils.trimDictionaryWord(file.getName().substring(0, file.getName().lastIndexOf(".")));
 			if (MapWithBible.dictionaryWordsVsBibleWordsMap.get(strItemID) == null) {
-				System.out.println("Word not found: " + strItemID);
+				System.out.println("MyBibleZone : Word not found: " + strItemID);
 				continue;
 			}
 
@@ -162,8 +163,8 @@ public class MyBibleZone {
 			dictionaryTable.insert(strItemID, buildDescriptionFromFile(file));
 			count++;
 		}
-		System.out.println("Dictionary Table Creation completed...");
-		System.out.println("Total Dictionary Words created is: " + count);
+		System.out.println("MyBibleZone : Dictionary Table Creation completed...");
+		System.out.println("MyBibleZone : Total Dictionary Words created is: " + count);
 	}
 
 	private static String buildDescriptionFromFile(File file) {
@@ -193,6 +194,7 @@ public class MyBibleZone {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		sb = Utils.applyLinksToReferences(sb, OUTPUT_FORMAT);
 		return sb;
 	}
 

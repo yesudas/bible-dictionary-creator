@@ -45,7 +45,7 @@ public class WordDocument {
 
 	public static final String EXTENSION = ".docx";
 
-	private static boolean CONTENT_IN_TWO_COLUMNS = false;
+	//private static boolean CONTENT_IN_TWO_COLUMNS = false;
 
 	private static int uniqueBookMarkCounter = 1;
 
@@ -65,14 +65,16 @@ public class WordDocument {
 		createIndex(document);
 		createContent(document);
 
-		// Write to file
-		File file = new File(BibleDictionaryCreator.outputFile + EXTENSION);
+		// Write to
+		String outfile = Utils.deleteOutputFileIfAlreadyExists(EXTENSION);
+		File file = new File(outfile);
 		try {
 			FileOutputStream out = new FileOutputStream(file);
 			document.write(out);
 			System.out.println("File created here: " + file.getAbsolutePath());
 		} catch (IOException e) {
 			e.printStackTrace();
+			System.out.println(e.getMessage());
 		}
 
 		System.out.println("Word Document of the Bible Dictionary Creation completed");
@@ -189,9 +191,9 @@ public class WordDocument {
 			paragraph = document.createParagraph();
 		}
 
-		if (CONTENT_IN_TWO_COLUMNS) {
+		//if (CONTENT_IN_TWO_COLUMNS) {
 			paragraph.setAlignment(ParagraphAlignment.BOTH);
-		}
+		//}
 		XWPFRun run = paragraph.createRun();
 		run.setFontFamily(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_CONTENT_FONT));
 		run.setFontSize(getFontSize(Constants.STR_CONTENT_FONT_SIZE));
@@ -303,8 +305,10 @@ public class WordDocument {
 		}
 		CTPageSz pageSize = section.getPgSz();
 		pageSize.setOrient(STPageOrientation.PORTRAIT);
-		pageSize.setW(BigInteger.valueOf(595 * 20));
-		pageSize.setH(BigInteger.valueOf(842 * 20));
+		int width = Integer.parseInt(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_PAGE_WIDTH));
+		int height = Integer.parseInt(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_PAGE_HEIGHT));
+		pageSize.setW(BigInteger.valueOf(width * 20));
+		pageSize.setH(BigInteger.valueOf(height * 20));
 		System.out.println("Page Setting completed");
 	}
 
@@ -373,7 +377,7 @@ public class WordDocument {
 		run.setFontFamily(BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_CONTENT_FONT));
 		run.setFontSize(getFontSize(Constants.STR_CONTENT_FONT_SIZE));
 		run.setText(
-				"If you are using this PDF in mobile, Navigation by Index may not work with Google Drive's PDF viewer. I would recommend ReadEra App for better performance and navigation experience.");
+				"If you are using this PDF in mobile, Navigation by Index may not work with Google Drive's PDF viewer. We would recommend ReadEra App in Android or other similar Apps in iPhone for better performance and navigation experience. https://play.google.com/store/apps/details?id=org.readera");
 		run.addBreak();
 		run.addBreak();
 		run.addBreak();
@@ -420,8 +424,7 @@ public class WordDocument {
 		paragraph = document.createParagraph();
 		paragraph.setSpacingAfter(0);
 		for (File file : folder.listFiles()) {
-			if (BibleDictionaryCreator.INFORMATION_FILE_NAME.equalsIgnoreCase(file.getName())
-					|| BibleDictionaryCreator.MAPPING_FILE_NAME.equalsIgnoreCase(file.getName())) {
+			if (Utils.checkForInValidFile(file)) {
 				continue;
 			}
 			String word = file.getName().substring(0, file.getName().lastIndexOf("."));

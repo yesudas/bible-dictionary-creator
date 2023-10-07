@@ -10,6 +10,8 @@ public class Constants {
 	// ZefaniaXML
 
 	// Word Document
+	public static final String STR_PAGE_WIDTH = "pageWidth";
+	public static final String STR_PAGE_HEIGHT = "pageHeight";
 	public static final String STR_TITLE_FONT = "titleFont";
 	public static final String STR_TITLE_FONT_SIZE = "titleFontSize";
 	public static final String STR_SUB_TITLE_FONT = "subTitleFont";

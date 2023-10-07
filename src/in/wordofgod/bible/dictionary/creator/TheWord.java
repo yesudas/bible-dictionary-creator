@@ -22,7 +22,18 @@ import org.tmatesoft.sqljet.core.table.SqlJetDb;
  */
 public class TheWord {
 
+	public static final String OUTPUT_FORMAT = "TheWord";
 	private static final String EXTENSION = ".dct.twm";
+
+	// {\field{\*\fldinst HYPERLINK "tw://[self]?ALPHA"}{\fldrslt \plain
+	// \f1\fs20\cf2 ALPHA}}
+	public static String WORD_LINK_FORMAT = "{\\field{\\*\\fldinst HYPERLINK \"tw://[self]?DICTIONARY_WORD\"}{\\fldrslt DICTIONARY_WORD}}";
+	// {\field{\*\fldinst HYPERLINK "tw://bible.*?id=42.14.11"}{\fldrslt Luke
+	// 14:11}}
+	public static String REFERENCE_LINK_FORMAT_1 = "{\\field{\\*\\fldinst HYPERLINK \"tw://bible.*?id=BOOK_NUMBER.CHAPTER_NUMBER.VERSE_NUMBER\"}{\\fldrslt Luke 14:11}}";
+	// {\field{\*\fldinst HYPERLINK "tw://bible.*?id=18.19.18-18.19.19"}{\fldrslt
+	// Job 19:18-19}}
+	public static String REFERENCE_LINK_FORMAT_2 = "{\\field{\\*\\fldinst HYPERLINK \"tw://bible.*?id=BOOK_NUMBER.CHAPTER_NUMBER.STARTING_VERSE_NUMBER-BOOK_NUMBER.CHAPTER_NUMBER.ENDING_VERSE_NUMBER\"}{\\fldrslt Job 19:18-19}}";
 
 	public static void build() {
 		System.out.println("TheWord Bible Dictionary Creation started...");
@@ -55,7 +66,7 @@ public class TheWord {
 		}
 
 		System.out.println("TheWord Bible Dictionary Creation completed...");
-		System.out.println("Result is stored in: " + new File(outfile).getAbsolutePath());
+		System.out.println("TheWord : Result is stored in: " + new File(outfile).getAbsolutePath());
 	}
 
 	private static void createTablesInDB(SqlJetDb db) throws SqlJetException {
@@ -71,7 +82,7 @@ public class TheWord {
 	}
 
 	private static void buildConfigTable(SqlJetDb db) throws FileNotFoundException, IOException, SqlJetException {
-		System.out.println("Config Table Creation started...");
+		System.out.println("TheWord : Config Table Creation started...");
 		ISqlJetTable configTable = db.getTable("config");
 
 		configTable.insert("lang", BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_LANGUAGE));
@@ -116,12 +127,12 @@ public class TheWord {
 		configTable.insert("editorial.comments", "version 1.0: first version");
 		configTable.insert("version.date", "2023-9-23");
 
-		System.out.println("Config Table Creation completed...");
+		System.out.println("TheWord : Config Table Creation completed...");
 	}
 
 	public static void buildContentTable(SqlJetDb db) throws SqlJetException {
-		System.out.println("Dictionary Table Creation started...");
-		System.out.println("Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
+		System.out.println("TheWord : Dictionary Table Creation started...");
+		System.out.println("TheWord : Reading the files/words from the folder " + BibleDictionaryCreator.folderPath);
 		ISqlJetTable contentTable = db.getTable("content");
 		String strItemID = null;
 		File folder = new File(BibleDictionaryCreator.folderPath);
@@ -130,35 +141,35 @@ public class TheWord {
 			if (Utils.checkForInValidFile(file)) {
 				continue;
 			}
-			System.out.println("Reading the file: " + file.getName());
+			System.out.println("TheWord : Reading the file: " + file.getName());
 
 			strItemID = Utils.trimDictionaryWord(file.getName().substring(0, file.getName().lastIndexOf(".")));
 			if (MapWithBible.dictionaryWordsVsBibleWordsMap.get(strItemID) == null) {
-				System.out.println("Word not found: " + strItemID);
+				System.out.println("TheWord : Word not found: " + strItemID);
 				continue;
 			}
 			count++;
 			contentTable.insert(count, buildDescriptionFromFile(file), null);
 		}
-		System.out.println("Dictionary Table Creation completed...");
-		System.out.println("Total Words created in content table is: " + count);
+		System.out.println("TheWord : Dictionary Table Creation completed...");
+		System.out.println("TheWord : Total Words created in content table is: " + count);
 	}
 
 	private static void buildTopicsTable(SqlJetDb db) throws FileNotFoundException, IOException, SqlJetException {
-		System.out.println("Topics Table Creation started...");
+		System.out.println("TheWord : Topics Table Creation started...");
 		int count = 0;
 		ISqlJetTable topicsTable = db.getTable("topics");
 		for (String dictionaryWord : MapWithBible.dictionaryWordsVsBibleWordsMap.keySet()) {
 			count++;
 			topicsTable.insert(count, 0, dictionaryWord, count, null);
 		}
-		System.out.println("Topics Table Creation completed...");
-		System.out.println("Total Words created in topics table is: " + count);
+		System.out.println("TheWord : Topics Table Creation completed...");
+		System.out.println("TheWord : Total Words created in topics table is: " + count);
 	}
 
 	private static void buildTopicsWordsIndexTable(SqlJetDb db)
 			throws FileNotFoundException, IOException, SqlJetException {
-		System.out.println("topics_wordindex Table Creation started...");
+		System.out.println("TheWord : topics_wordindex Table Creation started...");
 		int dictionaryWordCount = 0;
 		int mappingWordCount = 0;
 		ISqlJetTable topics_wordindexTable = db.getTable("topics_wordindex");
@@ -173,7 +184,7 @@ public class TheWord {
 				}
 			}
 		}
-		System.out.println("topics_wordindex Table Creation completed...");
+		System.out.println("TheWord : topics_wordindex Table Creation completed...");
 		System.out.println(
 				"Total Words created in topics_wordindex table is: " + (dictionaryWordCount + mappingWordCount));
 	}
@@ -238,6 +249,7 @@ public class TheWord {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		sb = Utils.applyLinksToReferences(sb, OUTPUT_FORMAT);
 		return sb;
 	}
 
