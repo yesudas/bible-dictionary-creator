@@ -1,0 +1,39 @@
+bibleSourceDirectory=D:\\WOG\\synched-github-projects\\all-bible-databases\\Bibles\\TheWord-Bible-Databases\\Tamil
+bibleVersions=TBSI,TAMSL'22,TAMOVR,TAMNT,TAMIRV'19,TAMCV'22,TAMCV'20,TAMBL'98,taBCS,ERV-ta,CTB1973,TamWCV
+#bibleVersions=TBSI
+generateMappingsForReview=yes
+mapRelatedWordsAutomatically=yes
+createZefaniaXML=no
+createWordDocument=no
+createMyBibleModule=yes
+createTheWordModule=no
+
+subject=சத்திய வேதாகமப் பெயர் அகராதி
+publisher=சுவிசேஷ ஊழிய நூல் நிலையம்
+title=சத்திய வேதாகமப் பெயர் அகராதி
+titleInEnglish=Satthiya Vedaagama Peyar Agaraathi
+subTitle=வேதாகமத்தில் உள்ள பெயர்களின் பொருளும் மட்டும் விளக்கமும்
+author=ஆர். என். ஆசீர்வாதம்
+publishedDate=1975
+description=சத்திய வேதாகமப் பெயர் அகராதி
+descriptionInEnglish=Satthiya Vedaagama Peyar Agaraathi
+proofReadBy=மதன்ராஜ் (ஜோசுவா), ஏசுதாஸ் சாலொமோன்
+creator=Yesudas Solomon and Mathanraj Joshua using Bible Dictionary Creator - https://github.com/yesudas/bible-dictionary-creator
+identifier=TSVPA
+language=ta
+
+# configurations for Word Document
+#A5 420*595; A4 595*842 - https://www.a4-size.com/a4-size-in-point/?size=a4&unit=po
+pageWidth=420
+pageHeight=595
+titleFont=Uni Ila.Sundaram-08
+titleFontSize=36
+subTitleFont=Uni Ila.Sundaram-04
+subTitleFontSize=16
+authorFont=Uni Ila.Sundaram-08
+authorFontSize=26
+headerFont=Uni Ila.Sundaram-04
+headerFontSize=18
+contentFont=Uni Ila.Sundaram-04
+contentFontSize=12
+indexPageTitle=அட்டவணை

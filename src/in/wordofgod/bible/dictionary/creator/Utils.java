@@ -673,8 +673,9 @@ public class Utils {
 					}
 				}
 			} catch (ArrayIndexOutOfBoundsException e) {
-				e.printStackTrace();
-				System.out.println(OUTPUT_FORMAT + " : ArrayIndexOutOfBoundsException for: " + portion);
+				//TODO display these logs to now the various use cases where the program is not able to apply links
+				//e.printStackTrace();
+				//System.out.println(OUTPUT_FORMAT + " : ArrayIndexOutOfBoundsException for: " + portion);
 			}
 
 		}
@@ -695,6 +696,7 @@ public class Utils {
 		String bookName = portionArr[0] + " " + portionArr[1];
 		Set<String> chapterSet = new HashSet<String>();
 		for (int i = 2; i < portionArr.length; i++) {
+			try {
 			String chapter = portionArr[i].trim();
 			if (chapter.contains(",")) {
 				String[] chapterArr = chapter.split(",");
@@ -707,11 +709,18 @@ public class Utils {
 						chapterSet.add("" + j);
 					}
 				} catch (NumberFormatException e) {
-					e.printStackTrace();
+					//TODO display these logs to now the various use cases where the program is not able to apply links
+					//e.printStackTrace();
 				}
 				chapterSet.addAll(Arrays.asList(chapterArr));
 			} else {
 				chapterSet.add(chapter.trim());
+			}
+			}catch (NumberFormatException e) {
+				//TODO display these logs to now the various use cases where the program is not able to apply links
+				//e.printStackTrace();
+				//System.out.println(
+					//	OUTPUT_FORMAT + " : Unable to create reference link for the bible Portion: " + portion);
 			}
 		}
 		String portion2 = "";
@@ -842,9 +851,10 @@ public class Utils {
 					}
 				}
 			} catch (ArrayIndexOutOfBoundsException e) {
-				e.printStackTrace();
-				System.out.println(
-						OUTPUT_FORMAT + " : Unable to create reference link for the bible Portion: " + portion);
+				//TODO display these logs to now the various use cases where the program is not able to apply links
+				//e.printStackTrace();
+				//System.out.println(
+					//	OUTPUT_FORMAT + " : Unable to create reference link for the bible Portion: " + portion);
 			}
 		}
 		System.out.println(OUTPUT_FORMAT + " : Final Data: " + sb);

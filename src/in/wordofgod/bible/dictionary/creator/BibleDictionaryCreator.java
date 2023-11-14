@@ -28,7 +28,7 @@ public class BibleDictionaryCreator {
 
 	/**
 	 * @param args
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static void main(String[] args) throws ParserConfigurationException, TransformerException, IOException {
 
@@ -47,23 +47,25 @@ public class BibleDictionaryCreator {
 		if (generateMappingsForReview) {
 			MapWithBible.createMappingFileForReview();
 			return;
-		}
-
-		String format = DICTIONARY_DETAILS.getProperty("createZefaniaXML");
-		if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
-			ZefaniaXML.build();
-		}
-		format = DICTIONARY_DETAILS.getProperty("createWordDocument");
-		if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
-			WordDocument.build();
-		}
-		format = DICTIONARY_DETAILS.getProperty("createMyBibleModule");
-		if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
-			MyBibleZone.build();
-		}
-		format = DICTIONARY_DETAILS.getProperty("createTheWordModule");
-		if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
-			TheWord.build();
+		} else {
+			// Since mapping words enabled, user has to manually review all the mappings
+			// before proceeding to next step
+			String format = DICTIONARY_DETAILS.getProperty("createZefaniaXML");
+			if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
+				ZefaniaXML.build();
+			}
+			format = DICTIONARY_DETAILS.getProperty("createWordDocument");
+			if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
+				WordDocument.build();
+			}
+			format = DICTIONARY_DETAILS.getProperty("createMyBibleModule");
+			if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
+				MyBibleZone.build();
+			}
+			format = DICTIONARY_DETAILS.getProperty("createTheWordModule");
+			if ("yes".equalsIgnoreCase(format) || "true".equalsIgnoreCase(format)) {
+				TheWord.build();
+			}
 		}
 	}
 

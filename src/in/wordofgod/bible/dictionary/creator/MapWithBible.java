@@ -281,6 +281,8 @@ public class MapWithBible {
 			String bibleVersions = BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_BIBLE_VERSIONS);
 			buildUniqueBibleWords(bibleSourceDirectory, bibleVersions);
 
+			System.out.println("Looping through uniqueDictionaryWords & bibleWords to build bibleWordsVsDictionaryWordsMap");
+			System.out.println("Please wait, it may take several minutes based on number of bibleVersions given in INFORMATION.txt");
 			uniqueDictionaryWords.forEach((k, v) -> {
 				for (String bibleWord : bibleWords) {
 					if (bibleWordsVsDictionaryWordsMap.containsKey(bibleWord)) {

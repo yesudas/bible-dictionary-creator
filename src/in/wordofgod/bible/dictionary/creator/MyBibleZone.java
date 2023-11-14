@@ -72,7 +72,7 @@ public class MyBibleZone {
 		Map<String, String> infoValues = new LinkedHashMap<>();
 
 		infoValues.put("language", BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_LANGUAGE));
-		infoValues.put("description", BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_DESCRIPTION));
+		infoValues.put("description", BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_TITLE));
 		infoValues.put("detailed_info",
 				BibleDictionaryCreator.DICTIONARY_DETAILS.getProperty(Constants.STR_DESCRIPTION));
 		infoValues.put("russian_numbering", "false");
